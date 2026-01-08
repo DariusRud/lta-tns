@@ -22,7 +22,6 @@
             </div>
             <div>
                 <h1 class="text-2xl font-bold text-slate-800">TNS Ataskaitų Generatorius</h1>
-                <p class="text-slate-500 text-sm">Paruoškite duomenis greitai ir be klaidų</p>
             </div>
         </div>
 
@@ -73,7 +72,7 @@
             </div>
 
             <!-- Status Message -->
-            <div id="statusBox" class="hidden mb-8 p-4 rounded-lg flex items-start gap-3">
+            <div id="statusBox" class="hidden mb-8 p-4 rounded-lg flex items-start gap-3 border">
                 <i id="statusIcon" class="w-5 h-5 mt-0.5 shrink-0"></i>
                 <p id="statusText" class="text-sm font-medium"></p>
             </div>
@@ -87,14 +86,11 @@
     </div>
 
     <script>
-        // Init Icons
         lucide.createIcons();
 
-        // State
         let uploadedData = null;
         const STATUSAI = ["UAB", "AB", "IĮ", "VŠĮ", "AS", "VIEŠOJI ĮSTAIGA"];
 
-        // Elements
         const fileInput = document.getElementById('fileInput');
         const dropZone = document.getElementById('dropZone');
         const uploadPrompt = document.getElementById('uploadPrompt');
@@ -107,11 +103,9 @@
         const reportYear = document.getElementById('reportYear');
         const reportMonth = document.getElementById('reportMonth');
 
-        // Event Listeners
         dropZone.onclick = () => fileInput.click();
         fileInput.onchange = (e) => handleFile(e.target.files[0]);
 
-        // Logic Functions
         const formatuotiReklamuotoja = (tekstas) => {
             if (!tekstas) return "";
             const dalys = tekstas.split(",").map(d => d.trim());
@@ -137,36 +131,39 @@
             return dalys[0].trim();
         };
 
-        const nustatytiTipaIRPuse = (kodas, tipasIsFailo) => {
+        const gautiPuse = (kodas, tipas) => {
             const k = String(kodas).trim().toUpperCase();
-            let tipas = tipasIsFailo || 'Stendas';
-            let puse = '1';
-
-            if (k.startsWith('SV')) tipas = 'Vitrina';
-            else if (k.startsWith('K')) tipas = 'Kolona';
-            else if (k.startsWith('S') && !k.startsWith('SV')) tipas = 'Stotelė';
-
-            const paskutinis = k.slice(-1);
+            const t = String(tipas).trim().toLowerCase();
             
-            if (tipas === 'Stotelė') {
-                puse = '1';
-            } else if (tipas === 'Kolona' || tipas === 'Vitrina') {
+            if (t.includes('siena')) return "1.0";
+            
+            if (t.includes('vitrina')) {
                 const match = k.match(/\.(\d)$/);
-                puse = match ? match[1] : (!isNaN(parseInt(paskutinis)) ? paskutinis : '1');
-            } else {
-                if (paskutinis === 'A' || paskutinis === '1' || k.endsWith(' A')) puse = '1';
-                else if (paskutinis === 'B' || paskutinis === '2' || k.endsWith(' B')) puse = '2';
+                if (match) return `${match[1]}.0`;
+                return "1.0";
             }
-            return { tipas, puse };
+
+            if (t.includes('kolona')) {
+                const match = k.match(/(\d)$/);
+                return match ? `${match[1]}.0` : "1.0";
+            }
+
+            if (t.includes('stotelė')) return "1.0";
+
+            const paskutinisChar = k.slice(-1);
+            if (paskutinisChar === 'A' || paskutinisChar === '1' || k.endsWith(' A')) return "1.0";
+            if (paskutinisChar === 'B' || paskutinisChar === '2' || k.endsWith(' B')) return "2.0";
+            
+            return "1.0";
         };
 
         function showStatus(message, type) {
             statusBox.classList.remove('hidden', 'bg-emerald-100', 'text-emerald-800', 'border-emerald-200', 'bg-red-100', 'text-red-800', 'border-red-200');
             if (type === 'success') {
-                statusBox.classList.add('bg-emerald-100', 'text-emerald-800', 'border', 'border-emerald-200');
+                statusBox.classList.add('bg-emerald-100', 'text-emerald-800', 'border-emerald-200');
                 statusIcon.setAttribute('data-lucide', 'check-circle-2');
             } else {
-                statusBox.classList.add('bg-red-100', 'text-red-800', 'border', 'border-red-200');
+                statusBox.classList.add('bg-red-100', 'text-red-800', 'border-red-200');
                 statusIcon.setAttribute('data-lucide', 'alert-circle');
             }
             statusText.innerText = message;
@@ -184,16 +181,15 @@
                 try {
                     const data = e.target.result;
                     const workbook = XLSX.read(data, { type: 'binary' });
-                    const sheetName = workbook.SheetNames[0];
-                    const sheet = workbook.Sheets[sheetName];
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
                     uploadedData = XLSX.utils.sheet_to_json(sheet);
                     
                     generateBtn.disabled = false;
                     generateBtn.classList.remove('bg-slate-200', 'text-slate-400', 'cursor-not-allowed');
-                    generateBtn.classList.add('bg-emerald-600', 'text-white', 'hover:bg-emerald-700', 'active:transform', 'active:scale-[0.98]');
-                    showStatus('Failas paruoštas apdorojimui.', 'success');
+                    generateBtn.classList.add('bg-emerald-600', 'text-white', 'hover:bg-emerald-700');
+                    showStatus('Failas paruoštas.', 'success');
                 } catch (err) {
-                    showStatus('Klaida nuskaitant failą. Patikrinkite formatą.', 'error');
+                    showStatus('Klaida nuskaitant failą.', 'error');
                 }
             };
             reader.readAsBinaryString(file);
@@ -206,24 +202,34 @@
             const month = reportMonth.value.padStart(2, '0');
             const targetPrefix = `${year}-${month}`;
 
-            // Filter
+            // Patobulintas filtravimas: pridedama sąlyga patikrinti "Pardavimas" lauką
             const filtered = uploadedData.filter(row => {
                 const d = row['Data'];
-                return d && String(d).startsWith(targetPrefix);
+                const p = row['Pardavimas'];
+                
+                // 1. Tikriname datą
+                const isCorrectMonth = d && String(d).startsWith(targetPrefix);
+                
+                // 2. Tikriname ar yra reklamuotojas (Pardavimas laukas nėra tuščias ar "0")
+                const hasAdvertiser = p && String(p).trim() !== "" && String(p).trim() !== "0";
+                
+                return isCorrectMonth && hasAdvertiser;
             });
 
             if (filtered.length === 0) {
-                showStatus(`Nerasta duomenų už ${year}-${month}.`, 'error');
+                showStatus(`Nerasta duomenų (su reklamuotojais) už ${year}-${month}.`, 'error');
                 return;
             }
 
-            // Sort
             const sorted = [...filtered].sort((a, b) => {
-                if (a['Kodas'] !== b['Kodas']) return String(a['Kodas']).localeCompare(String(b['Kodas']));
+                const codeA = String(a['Kodas']);
+                const codeB = String(b['Kodas']);
+                if (codeA !== codeB) {
+                    return codeA.localeCompare(codeB, undefined, { numeric: true, sensitivity: 'base' });
+                }
                 return String(a['Data']).localeCompare(String(b['Data']));
             });
 
-            // Group
             const groups = [];
             if (sorted.length > 0) {
                 let currentGroup = {
@@ -256,37 +262,32 @@
                 groups.push(currentGroup);
             }
 
-            // Map to TNS format
             const tnsRows = groups.map(g => {
                 const sDates = g.datos.sort();
-                const nuo = sDates[0];
-                const iki = sDates[sDates.length - 1];
                 const dienos = sDates.length;
-                
-                const { tipas, puse } = nustatytiTipaIRPuse(g.kodas, g.tipas);
+                const puse = gautiPuse(g.kodas, g.tipas);
                 const gross = (dienos * (g.kainaSav / 7));
 
                 return {
                     'Stendo vietos kodas': g.kodas,
-                    'Stendo tipas': tipas,
+                    'Stendo tipas': g.tipas,
                     'Miestas': g.miestas,
                     'Adresas': g.adresas,
                     'Reklamuotojas': formatuotiReklamuotoja(g.pardavimas),
                     'Prekės ženklas': g.pardavimas,
                     'Reklamuojamas produktas': formatuotiProdukta(g.pardavimas) || g.pardavimas,
-                    'Data nuo': nuo,
-                    'Data iki': iki,
+                    'Data nuo': sDates[0],
+                    'Data iki': sDates[sDates.length - 1],
                     'Pusė': puse,
-                    'GROSS įkainis Eur': gross.toFixed(2)
+                    'GROSS įkainis Eur': Number(gross.toFixed(2))
                 };
             });
 
-            // Export
             const ws = XLSX.utils.json_to_sheet(tnsRows);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "TNS Ataskaita");
             XLSX.writeFile(wb, `TNS_Ataskaita_${year}_${month}.xlsx`);
-            showStatus(`Sėkmingai sugeneruota ${tnsRows.length} eilučių.`, 'success');
+            showStatus(`Sugeneruota ${tnsRows.length} eilučių.`, 'success');
         };
     </script>
 </body>
