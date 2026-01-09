@@ -10,6 +10,17 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; }
+        
+        /* Užtikriname, kad ratukas suktųsi net kai procesorius apkrautas */
+        .smooth-spin {
+            will-change: transform;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen p-4 md:p-8 text-slate-900 relative">
@@ -18,7 +29,7 @@
     <div id="loadingOverlay" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white text-center px-4">
         <div class="bg-white p-8 rounded-3xl flex flex-col items-center shadow-2xl max-w-sm w-full border border-slate-100">
             <div class="relative mb-4">
-                <i data-lucide="loader-2" class="w-14 h-14 text-emerald-600 animate-spin"></i>
+                <i data-lucide="loader-2" class="w-14 h-14 text-emerald-600 smooth-spin"></i>
             </div>
             <p id="loadingTitle" class="text-slate-800 font-bold text-xl mb-1">Apdorojama...</p>
             <p id="loadingSubtitle" class="text-slate-500 text-sm mb-4">Prašome palaukti...</p>
@@ -285,6 +296,7 @@
         changeFileBtn.onclick = () => { fileInput.click(); };
 
         function handleFile(file) {
+            // Parodyti krovimą ir duoti naršyklei laiko pradėti animaciją
             loadingTitle.innerText = "Failas apdorojamas.....";
             loadingSubtitle.innerText = "Nuskaitomi duomenys";
             loadingWarning.classList.remove('hidden');
@@ -293,23 +305,26 @@
             setTimeout(() => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    try {
-                        const data = e.target.result;
-                        const workbook = XLSX.read(data, { type: 'binary', cellDates: true });
-                        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                        uploadedData = XLSX.utils.sheet_to_json(sheet);
-                        
-                        loadedFileNameDisplay.innerText = file.name;
-                        goToStep(2);
-                    } catch (err) {
-                        alert('Klaida nuskaitant failą. Patikrinkite ar tai tinkamas "Eksportas_statika.xls" failas.');
-                    } finally {
-                        loadingOverlay.classList.add('hidden');
-                        loadingWarning.classList.add('hidden');
-                    }
+                    // Failas nuskaitytas į atmintį, dabar skaidome skaičiavimą
+                    setTimeout(() => {
+                        try {
+                            const data = e.target.result;
+                            const workbook = XLSX.read(data, { type: 'binary', cellDates: true });
+                            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                            uploadedData = XLSX.utils.sheet_to_json(sheet);
+                            
+                            loadedFileNameDisplay.innerText = file.name;
+                            goToStep(2);
+                        } catch (err) {
+                            alert('Klaida nuskaitant failą. Patikrinkite ar tai tinkamas "Eksportas_statika.xls" failas.');
+                        } finally {
+                            loadingOverlay.classList.add('hidden');
+                            loadingWarning.classList.add('hidden');
+                        }
+                    }, 50); // Maža pauzė ratuko sukimuisi užtikrinti
                 };
                 reader.readAsBinaryString(file);
-            }, 100);
+            }, 300); // Didesnė pradinė pauzė užtikrina, kad animacija spėtų pasileisti
         }
 
         // --- PAGALBINĖS FUNKCIJOS ---
@@ -358,6 +373,7 @@
             loadingWarning.classList.remove('hidden');
             loadingOverlay.classList.remove('hidden');
 
+            // Skaidome procesą, kad ratukas suktųsi
             setTimeout(() => {
                 try {
                     const year = reportYear.value;
@@ -368,22 +384,12 @@
                     const filtered = uploadedData.filter(row => {
                         const d = row['Data'];
                         const p = row['Pardavimas'];
-                        
-                        // 1. Tikriname datą
                         if (!(d && String(d).startsWith(targetPrefix))) return false;
-                        
-                        // 2. Tikriname ar užsakymas nėra tuščias
                         if (!p || String(p).trim() === "" || String(p).trim() === "0") return false;
-                        
                         const pStr = String(p).toLowerCase();
-
-                        // 3. NAUJA SĄLYGA: Netraukti jei yra "Savininko reklama" arba "LT advert"
                         if (pStr.includes("savininko reklama") || pStr.includes("lt advert")) return false;
-
-                        // 4. Tikriname vadybininko inicialus (ignoruojant RP)
                         const visiInicialai = String(p).match(inicialuRegex) || [];
                         const vadybininkai = visiInicialai.filter(init => init.replace(/\s/g, '').toUpperCase() !== 'RP');
-                        
                         return vadybininkai.length > 0;
                     });
 
@@ -453,21 +459,25 @@
                         };
                     });
 
-                    const ws = XLSX.utils.json_to_sheet(tnsRows);
-                    const wb = XLSX.utils.book_new();
-                    XLSX.utils.book_append_sheet(wb, ws, "TNS Ataskaita");
-                    XLSX.writeFile(wb, `TNS_Ataskaita_${year}_${month}.xlsx`);
-                    
-                    resultInfo.innerText = `Suformuota ${tnsRows.length} eilučių už ${year} m. ${month} mėn.`;
-                    goToStep(3);
+                    // Sukūrimas ir parsiuntimas taip pat skaidomas
+                    setTimeout(() => {
+                        const ws = XLSX.utils.json_to_sheet(tnsRows);
+                        const wb = XLSX.utils.book_new();
+                        XLSX.utils.book_append_sheet(wb, ws, "TNS Ataskaita");
+                        XLSX.writeFile(wb, `TNS_Ataskaita_${year}_${month}.xlsx`);
+                        
+                        resultInfo.innerText = `Suformuota ${tnsRows.length} eilučių už ${year} m. ${month} mėn.`;
+                        goToStep(3);
+                        loadingOverlay.classList.add('hidden');
+                        loadingWarning.classList.add('hidden');
+                    }, 100);
+
                 } catch (err) {
                     console.error(err);
                     alert('Klaida generuojant ataskaitą.');
-                } finally {
                     loadingOverlay.classList.add('hidden');
-                    loadingWarning.classList.add('hidden');
                 }
-            }, 500);
+            }, 300);
         };
 
         // --- ATSTATYMO LOGIKA ---
