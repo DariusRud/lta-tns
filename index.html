@@ -368,16 +368,27 @@
                     const filtered = uploadedData.filter(row => {
                         const d = row['Data'];
                         const p = row['Pardavimas'];
+                        
+                        // 1. Tikriname datą
                         if (!(d && String(d).startsWith(targetPrefix))) return false;
+                        
+                        // 2. Tikriname ar užsakymas nėra tuščias
                         if (!p || String(p).trim() === "" || String(p).trim() === "0") return false;
-                        const pStr = String(p);
-                        const visiInicialai = pStr.match(inicialuRegex) || [];
+                        
+                        const pStr = String(p).toLowerCase();
+
+                        // 3. NAUJA SĄLYGA: Netraukti jei yra "Savininko reklama" arba "LT advert"
+                        if (pStr.includes("savininko reklama") || pStr.includes("lt advert")) return false;
+
+                        // 4. Tikriname vadybininko inicialus (ignoruojant RP)
+                        const visiInicialai = String(p).match(inicialuRegex) || [];
                         const vadybininkai = visiInicialai.filter(init => init.replace(/\s/g, '').toUpperCase() !== 'RP');
+                        
                         return vadybininkai.length > 0;
                     });
 
                     if (filtered.length === 0) {
-                        alert(`Nerasta komercinių užsakymų už ${year}-${month}.`);
+                        alert(`Nerasta tinkamų komercinių užsakymų už ${year}-${month}.`);
                         loadingOverlay.classList.add('hidden');
                         loadingWarning.classList.add('hidden');
                         return;
