@@ -289,16 +289,35 @@
                     const month = reportMonth.value.padStart(2, '0');
                     const targetPrefix = `${year}-${month}`;
 
+                    // Reguliari išraiška bet kokiems inicialams (pvz. V. P. arba V.P.)
+                    const inicialuRegex = /[A-ZĄČĘĖĮŠŲŪŽ]\.\s?[A-ZĄČĘĖĮŠŲŪŽ]\./g;
+
                     const filtered = uploadedData.filter(row => {
                         const d = row['Data'];
                         const p = row['Pardavimas'];
+                        
+                        // 1. Tikriname datą
                         const isCorrectMonth = d && String(d).startsWith(targetPrefix);
-                        const hasAdvertiser = p && String(p).trim() !== "" && String(p).trim() !== "0";
-                        return isCorrectMonth && hasAdvertiser;
+                        if (!isCorrectMonth) return false;
+
+                        // 2. Tikriname ar užsakymas yra komercinis (turi vadybininko inicialus)
+                        if (!p || String(p).trim() === "" || String(p).trim() === "0") return false;
+                        
+                        const pStr = String(p);
+                        const visiInicialai = pStr.match(inicialuRegex) || [];
+                        
+                        // Iš visų rastų inicialų atfiltruojame tuos, kurie NĖRA "RP"
+                        const vadybininkai = visiInicialai.filter(init => {
+                            const clean = init.replace(/\s/g, '').toUpperCase();
+                            return clean !== 'RP';
+                        });
+                        
+                        // Užsakymas komercinis tik jei po filtravimo liko bent vieni inicialai (vadybininko)
+                        return vadybininkai.length > 0;
                     });
 
                     if (filtered.length === 0) {
-                        showStatus(`Nerasta duomenų už ${year}-${month}.`, 'error');
+                        showStatus(`Nerasta komercinių užsakymų (su vadybininko inicialais) už ${year}-${month}.`, 'error');
                         loadingOverlay.classList.add('hidden');
                         return;
                     }
