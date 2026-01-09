@@ -46,10 +46,40 @@
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
-            <!-- 1. Failo įkėlimas -->
+            
+            <!-- 1. Sugeneravimo instrukcija -->
+            <div class="mb-10 p-6 bg-emerald-50 border border-emerald-100 rounded-2xl">
+                <h3 class="text-sm font-bold text-emerald-800 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <i data-lucide="info" class="w-4 h-4"></i> 1. Sugeneruokite failą Eksportas_statika.xls
+                </h3>
+                <ul class="text-sm text-emerald-700 space-y-2 list-none pl-1">
+                    <li class="flex items-start gap-2">
+                        <span class="text-emerald-400">•</span>
+                        <span>Atsidarykite <a href="https://lta-eilutes.vercel.app/" target="_blank" class="underline font-semibold hover:text-emerald-900 transition-colors">lta-eilutes.vercel.app</a></span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-emerald-400">•</span>
+                        <span>Prisijunkite prie sistemos</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-emerald-400">•</span>
+                        <span>Pasirinkite skiltį <strong>„Statika“</strong></span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-emerald-400">•</span>
+                        <span>Įkelkite naujausią <strong>Uzimtumas L..xls</strong> failą</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="text-emerald-400">•</span>
+                        <span>Palaukite, kol sistema sugeneruos failą <strong>Eksportas_statika.xls</strong></span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 2. Failo įkėlimas -->
             <div class="mb-8">
                 <label class="block text-sm font-semibold text-slate-700 mb-2 uppercase tracking-wider">
-                    1. Įkelkite <span class="text-emerald-600">Eksportas_statika.xls</span> failą
+                    2. Įkelkite <span class="text-emerald-600 font-bold">Eksportas_statika.xls</span> failą
                 </label>
                 <div id="dropZone" class="border-2 border-dashed border-slate-200 rounded-xl p-10 flex flex-col items-center justify-center cursor-pointer hover:border-emerald-400 hover:bg-emerald-50 transition-all bg-white group">
                     <input type="file" id="fileInput" class="hidden" accept=".xlsx, .xls, .csv">
@@ -69,7 +99,7 @@
                 </div>
             </div>
 
-            <!-- 2. Konfigūracija -->
+            <!-- 3. Konfigūracija -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2 uppercase tracking-wider">Metai</label>
@@ -134,21 +164,15 @@
         const loadingTitle = document.getElementById('loadingTitle');
         const loadingSubtitle = document.getElementById('loadingSubtitle');
 
-        // NUSTATYTI PRAEITĄ MĖNESĮ PAGAL NUTYLĖJIMĄ
         const nustatytiPraeitaMenesi = () => {
             const d = new Date();
-            // Atimame vieną mėnesį. JS Date objektas automatiškai pakeičia metus, 
-            // jei dabar yra sausis (0), atėmus gausime gruodį (11) ir praėjusius metus.
             d.setMonth(d.getMonth() - 1);
-            
-            const pMenesis = d.getMonth() + 1; // JS mėnesiai 0-11
+            const pMenesis = d.getMonth() + 1;
             const pMetai = d.getFullYear();
-            
             reportYear.value = pMetai;
             reportMonth.value = pMenesis;
         };
 
-        // Paleidžiame nustatymą iškart užkrovus
         nustatytiPraeitaMenesi();
 
         dropZone.onclick = () => fileInput.click();
