@@ -10,9 +10,28 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
+        
+        .loader {
+            border-top-color: #059669;
+            animation: spinner 1.5s linear infinite;
+        }
+
+        @keyframes spinner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen p-4 md:p-8 text-slate-900">
+<body class="bg-slate-50 min-h-screen p-4 md:p-8 text-slate-900 relative">
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white">
+        <div class="bg-white p-8 rounded-2xl flex flex-col items-center shadow-2xl">
+            <i data-lucide="loader-2" class="w-12 h-12 text-emerald-600 animate-spin mb-4"></i>
+            <p class="text-slate-800 font-bold text-lg">Generuojama TNS ataskaita</p>
+            <p class="text-slate-500 text-sm mt-1">Prašome palaukti...</p>
+        </div>
+    </div>
 
     <div class="max-w-4xl mx-auto">
         <!-- Header -->
@@ -102,6 +121,7 @@
         const statusIcon = document.getElementById('statusIcon');
         const reportYear = document.getElementById('reportYear');
         const reportMonth = document.getElementById('reportMonth');
+        const loadingOverlay = document.getElementById('loadingOverlay');
 
         dropZone.onclick = () => fileInput.click();
         fileInput.onchange = (e) => handleFile(e.target.files[0]);
@@ -198,96 +218,104 @@
         generateBtn.onclick = () => {
             if (!uploadedData) return;
 
-            const year = reportYear.value;
-            const month = reportMonth.value.padStart(2, '0');
-            const targetPrefix = `${year}-${month}`;
+            // Rodyti krovimosi langą
+            loadingOverlay.classList.remove('hidden');
 
-            // Patobulintas filtravimas: pridedama sąlyga patikrinti "Pardavimas" lauką
-            const filtered = uploadedData.filter(row => {
-                const d = row['Data'];
-                const p = row['Pardavimas'];
-                
-                // 1. Tikriname datą
-                const isCorrectMonth = d && String(d).startsWith(targetPrefix);
-                
-                // 2. Tikriname ar yra reklamuotojas (Pardavimas laukas nėra tuščias ar "0")
-                const hasAdvertiser = p && String(p).trim() !== "" && String(p).trim() !== "0";
-                
-                return isCorrectMonth && hasAdvertiser;
-            });
+            // Naudojame setTimeout, kad naršyklė spėtų parodyti krovimosi langą prieš pradedant skaičiavimus
+            setTimeout(() => {
+                try {
+                    const year = reportYear.value;
+                    const month = reportMonth.value.padStart(2, '0');
+                    const targetPrefix = `${year}-${month}`;
 
-            if (filtered.length === 0) {
-                showStatus(`Nerasta duomenų (su reklamuotojais) už ${year}-${month}.`, 'error');
-                return;
-            }
+                    const filtered = uploadedData.filter(row => {
+                        const d = row['Data'];
+                        const p = row['Pardavimas'];
+                        const isCorrectMonth = d && String(d).startsWith(targetPrefix);
+                        const hasAdvertiser = p && String(p).trim() !== "" && String(p).trim() !== "0";
+                        return isCorrectMonth && hasAdvertiser;
+                    });
 
-            const sorted = [...filtered].sort((a, b) => {
-                const codeA = String(a['Kodas']);
-                const codeB = String(b['Kodas']);
-                if (codeA !== codeB) {
-                    return codeA.localeCompare(codeB, undefined, { numeric: true, sensitivity: 'base' });
-                }
-                return String(a['Data']).localeCompare(String(b['Data']));
-            });
-
-            const groups = [];
-            if (sorted.length > 0) {
-                let currentGroup = {
-                    kodas: sorted[0]['Kodas'],
-                    pardavimas: sorted[0]['Pardavimas'],
-                    miestas: sorted[0]['Miestas'],
-                    adresas: sorted[0]['Pardavimų adresas'],
-                    tipas: sorted[0]['Tipas'],
-                    kainaSav: parseFloat(sorted[0]['1 sav. nuomos GROSS kaina']) || 0,
-                    datos: [sorted[0]['Data']]
-                };
-
-                for (let i = 1; i < sorted.length; i++) {
-                    const row = sorted[i];
-                    if (row['Kodas'] === currentGroup.kodas && row['Pardavimas'] === currentGroup.pardavimas) {
-                        currentGroup.datos.push(row['Data']);
-                    } else {
-                        groups.push(currentGroup);
-                        currentGroup = {
-                            kodas: row['Kodas'],
-                            pardavimas: row['Pardavimas'],
-                            miestas: row['Miestas'],
-                            adresas: row['Pardavimų adresas'],
-                            tipas: row['Tipas'],
-                            kainaSav: parseFloat(row['1 sav. nuomos GROSS kaina']) || 0,
-                            datos: [row['Data']]
-                        };
+                    if (filtered.length === 0) {
+                        showStatus(`Nerasta duomenų (su reklamuotojais) už ${year}-${month}.`, 'error');
+                        loadingOverlay.classList.add('hidden');
+                        return;
                     }
+
+                    const sorted = [...filtered].sort((a, b) => {
+                        const codeA = String(a['Kodas']);
+                        const codeB = String(b['Kodas']);
+                        if (codeA !== codeB) {
+                            return codeA.localeCompare(codeB, undefined, { numeric: true, sensitivity: 'base' });
+                        }
+                        return String(a['Data']).localeCompare(String(b['Data']));
+                    });
+
+                    const groups = [];
+                    if (sorted.length > 0) {
+                        let currentGroup = {
+                            kodas: sorted[0]['Kodas'],
+                            pardavimas: sorted[0]['Pardavimas'],
+                            miestas: sorted[0]['Miestas'],
+                            adresas: sorted[0]['Pardavimų adresas'],
+                            tipas: sorted[0]['Tipas'],
+                            kainaSav: parseFloat(sorted[0]['1 sav. nuomos GROSS kaina']) || 0,
+                            datos: [sorted[0]['Data']]
+                        };
+
+                        for (let i = 1; i < sorted.length; i++) {
+                            const row = sorted[i];
+                            if (row['Kodas'] === currentGroup.kodas && row['Pardavimas'] === currentGroup.pardavimas) {
+                                currentGroup.datos.push(row['Data']);
+                            } else {
+                                groups.push(currentGroup);
+                                currentGroup = {
+                                    kodas: row['Kodas'],
+                                    pardavimas: row['Pardavimas'],
+                                    miestas: row['Miestas'],
+                                    adresas: row['Pardavimų adresas'],
+                                    tipas: row['Tipas'],
+                                    kainaSav: parseFloat(row['1 sav. nuomos GROSS kaina']) || 0,
+                                    datos: [row['Data']]
+                                };
+                            }
+                        }
+                        groups.push(currentGroup);
+                    }
+
+                    const tnsRows = groups.map(g => {
+                        const sDates = g.datos.sort();
+                        const dienos = sDates.length;
+                        const puse = gautiPuse(g.kodas, g.tipas);
+                        const gross = (dienos * (g.kainaSav / 7));
+
+                        return {
+                            'Stendo vietos kodas': g.kodas,
+                            'Stendo tipas': g.tipas,
+                            'Miestas': g.miestas,
+                            'Adresas': g.adresas,
+                            'Reklamuotojas': formatuotiReklamuotoja(g.pardavimas),
+                            'Prekės ženklas': g.pardavimas,
+                            'Reklamuojamas produktas': formatuotiProdukta(g.pardavimas) || g.pardavimas,
+                            'Data nuo': sDates[0],
+                            'Data iki': sDates[sDates.length - 1],
+                            'Pusė': puse,
+                            'GROSS įkainis Eur': Number(gross.toFixed(2))
+                        };
+                    });
+
+                    const ws = XLSX.utils.json_to_sheet(tnsRows);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "TNS Ataskaita");
+                    XLSX.writeFile(wb, `TNS_Ataskaita_${year}_${month}.xlsx`);
+                    
+                    showStatus(`Sugeneruota ${tnsRows.length} eilučių.`, 'success');
+                } catch (err) {
+                    showStatus('Klaida generuojant ataskaitą.', 'error');
+                } finally {
+                    loadingOverlay.classList.add('hidden');
                 }
-                groups.push(currentGroup);
-            }
-
-            const tnsRows = groups.map(g => {
-                const sDates = g.datos.sort();
-                const dienos = sDates.length;
-                const puse = gautiPuse(g.kodas, g.tipas);
-                const gross = (dienos * (g.kainaSav / 7));
-
-                return {
-                    'Stendo vietos kodas': g.kodas,
-                    'Stendo tipas': g.tipas,
-                    'Miestas': g.miestas,
-                    'Adresas': g.adresas,
-                    'Reklamuotojas': formatuotiReklamuotoja(g.pardavimas),
-                    'Prekės ženklas': g.pardavimas,
-                    'Reklamuojamas produktas': formatuotiProdukta(g.pardavimas) || g.pardavimas,
-                    'Data nuo': sDates[0],
-                    'Data iki': sDates[sDates.length - 1],
-                    'Pusė': puse,
-                    'GROSS įkainis Eur': Number(gross.toFixed(2))
-                };
-            });
-
-            const ws = XLSX.utils.json_to_sheet(tnsRows);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "TNS Ataskaita");
-            XLSX.writeFile(wb, `TNS_Ataskaita_${year}_${month}.xlsx`);
-            showStatus(`Sugeneruota ${tnsRows.length} eilučių.`, 'success');
+            }, 800); // 800ms pauzė, kad vartotojas matytų procesą
         };
     </script>
 </body>
