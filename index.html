@@ -11,7 +11,6 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; }
         
-        /* GPU pagreitinta animacija sklandumui užtikrinti */
         .hardware-spin {
             animation: fast-spin 1s linear infinite;
             will-change: transform;
@@ -33,10 +32,11 @@
                 <div class="w-16 h-16 border-4 border-slate-100 border-t-emerald-600 rounded-full hardware-spin"></div>
             </div>
             <p id="loadingTitle" class="text-slate-800 font-bold text-xl mb-1">Apdorojama...</p>
-            <p id="loadingSubtitle" class="text-slate-500 text-sm mb-6">Nuskaitomi duomenys</p>
-            <div id="loadingWarning" class="hidden border-t border-red-50 pt-4">
-                <p class="text-red-600 text-[11px] font-bold leading-relaxed uppercase tracking-tight text-center">
-                    Kadangi įkeltas didelis failas, programa gali "strigti", visada spauskite tęsti arba wait
+            <p id="loadingSubtitle" class="text-slate-500 text-sm mb-6">Laukite, nuskaitomas failas</p>
+            
+            <div class="mt-4 pt-4 border-t border-red-100">
+                <p class="text-red-600 font-black text-[11px] uppercase tracking-wide leading-tight">
+                    Įkeltas didelis failas,<br>jeigu iššoks pranešimas Wait, spausti wait
                 </p>
             </div>
         </div>
@@ -123,29 +123,27 @@
                 </div>
             </div>
 
-            <!-- ŽINGSNIS 2: Laikotarpio pasirinkimas -->
+            <!-- ŽINGSNIS 2: Laikotarpis -->
             <div id="step2" class="hidden flex-col flex-grow animate-in fade-in slide-in-from-right-8 duration-500">
                 <div class="flex items-center justify-between mb-8">
                     <div class="flex items-center gap-3 text-emerald-600 font-bold bg-emerald-50 py-2 px-4 rounded-full border border-emerald-100">
                         <i data-lucide="file-check" class="w-5 h-5"></i>
-                        <span id="loadedFileNameDisplay" class="text-sm truncate max-w-[200px] md:max-w-md text-emerald-700 font-bold">Failas įkeltas</span>
+                        <span id="loadedFileNameDisplay" class="text-sm truncate max-w-[200px] text-emerald-700 font-bold">Failas paruoštas</span>
                     </div>
                     <button id="changeFileBtn" class="text-xs font-bold text-slate-400 hover:text-red-500 underline uppercase tracking-widest transition-colors">Keisti</button>
                 </div>
                 
-                <h3 class="text-2xl font-black text-slate-800 mb-2">Pasirinkite mėnesį</h3>
-                <p class="text-slate-500 mb-10 text-sm italic">Ataskaita bus suformuota tik už šį konkretų laikotarpį</p>
-                
+                <h3 class="text-2xl font-black text-slate-800 mb-2">Pasirinkite laikotarpį</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
                     <div class="space-y-2">
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Ataskaitos metai</label>
-                        <select id="reportYear" class="w-full p-5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:outline-none cursor-pointer font-bold text-slate-700 text-lg shadow-sm appearance-none">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Metai</label>
+                        <select id="reportYear" class="w-full p-5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:outline-none cursor-pointer font-bold text-slate-700 text-lg shadow-sm">
                             <option value="2024">2024 metai</option><option value="2025">2025 metai</option><option value="2026">2026 metai</option><option value="2027">2027 metai</option>
                         </select>
                     </div>
                     <div class="space-y-2">
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Ataskaitos mėnuo</label>
-                        <select id="reportMonth" class="w-full p-5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:outline-none cursor-pointer font-bold text-slate-700 text-lg shadow-sm appearance-none">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">Mėnuo</label>
+                        <select id="reportMonth" class="w-full p-5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:outline-none cursor-pointer font-bold text-slate-700 text-lg shadow-sm">
                             <option value="1">Sausis</option><option value="2">Vasaris</option><option value="3">Kovas</option>
                             <option value="4">Balandis</option><option value="5">Gegužė</option><option value="6">Birželis</option>
                             <option value="7">Liepa</option><option value="8">Rugpjūtis</option><option value="9">Rugsėjis</option>
@@ -156,38 +154,20 @@
 
                 <button id="generateBtn" class="group w-full py-6 rounded-3xl font-black text-xl flex items-center justify-center gap-4 shadow-xl shadow-emerald-200 transition-all bg-emerald-600 text-white hover:bg-emerald-700 active:scale-[0.98]">
                     <i data-lucide="wand-2" class="w-7 h-7 group-hover:rotate-12 transition-transform"></i>
-                    Suformuoti TNS ataskaitą
+                    Formuoti TNS ataskaitą
                 </button>
             </div>
 
             <!-- ŽINGSNIS 3: Rezultatas -->
             <div id="step3" class="hidden flex-col flex-grow items-center justify-center text-center animate-in zoom-in-95 duration-500">
-                <div class="relative mb-8">
-                    <div class="absolute inset-0 bg-emerald-100 rounded-full scale-150 animate-pulse opacity-50"></div>
-                    <div class="bg-emerald-500 p-6 rounded-full relative z-10 shadow-lg">
-                        <i data-lucide="check" class="w-16 h-16 text-white stroke-[3]"></i>
-                    </div>
+                <div class="bg-emerald-500 p-6 rounded-full shadow-lg mb-8">
+                    <i data-lucide="check" class="w-16 h-16 text-white stroke-[3]"></i>
                 </div>
-                
                 <h2 class="text-3xl font-black text-slate-800 mb-3 tracking-tight">Ataskaita paruošta!</h2>
                 <p id="resultInfo" class="text-slate-500 mb-10 text-lg font-medium"></p>
-                
-                <div class="w-full max-w-md space-y-4">
-                    <div class="p-5 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center gap-4 text-emerald-800 text-left">
-                        <div class="bg-emerald-200 p-3 rounded-xl">
-                            <i data-lucide="download" class="w-6 h-6"></i>
-                        </div>
-                        <div>
-                            <p class="font-bold text-sm">Failas parsiųstas</p>
-                            <p class="text-xs opacity-80">Patikrinkite savo parsiuntimų aplanką.</p>
-                        </div>
-                    </div>
-                    
-                    <button id="restartBtn" class="w-full py-5 rounded-2xl font-bold text-slate-600 border-2 border-slate-100 hover:bg-slate-50 transition-all flex items-center justify-center gap-3">
-                        <i data-lucide="refresh-ccw" class="w-5 h-5"></i>
-                        Formuoti kitą ataskaitą
-                    </button>
-                </div>
+                <button id="restartBtn" class="w-full max-w-xs py-5 rounded-2xl font-bold text-slate-600 border-2 border-slate-100 hover:bg-slate-50 transition-all flex items-center justify-center gap-3">
+                    <i data-lucide="refresh-ccw" class="w-5 h-5"></i> Nauja ataskaita
+                </button>
             </div>
 
         </div>
@@ -196,7 +176,7 @@
     <script>
         lucide.createIcons();
 
-        // --- AUTENTIFIKACIJA ---
+        // Autentifikacija
         const loginBtn = document.getElementById('loginBtn');
         const stepLogin = document.getElementById('stepLogin');
         const mainApp = document.getElementById('mainApp');
@@ -205,10 +185,7 @@
         const passwordInput = document.getElementById('password');
 
         const handleLogin = () => {
-            const u = usernameInput.value;
-            const p = passwordInput.value;
-
-            if (u === 'User' && p === 'user123') {
+            if (usernameInput.value === 'User' && passwordInput.value === 'user123') {
                 stepLogin.classList.add('hidden');
                 mainApp.classList.remove('hidden');
                 goToStep(1);
@@ -217,67 +194,31 @@
                 setTimeout(() => loginError.classList.add('hidden'), 3000);
             }
         };
-
-        // Prisijungimas paspaudus Enter klavišą
+        
         [usernameInput, passwordInput].forEach(input => {
             input.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    handleLogin();
-                }
+                if (e.key === 'Enter') handleLogin();
             });
         });
 
         loginBtn.onclick = handleLogin;
 
-        // --- BŪSENA ---
         let uploadedData = null;
         const STATUSAI = ["UAB", "AB", "IĮ", "VŠĮ", "AS", "VIEŠOJI ĮSTAIGA"];
 
-        // --- ELEMENTAI ---
         const steps = [document.getElementById('step1'), document.getElementById('step2'), document.getElementById('step3')];
         const fileInput = document.getElementById('fileInput');
         const dropZone = document.getElementById('dropZone');
         const generateBtn = document.getElementById('generateBtn');
         const restartBtn = document.getElementById('restartBtn');
-        const changeFileBtn = document.getElementById('changeFileBtn');
         const reportYear = document.getElementById('reportYear');
         const reportMonth = document.getElementById('reportMonth');
         const loadingOverlay = document.getElementById('loadingOverlay');
         const loadingTitle = document.getElementById('loadingTitle');
         const loadingSubtitle = document.getElementById('loadingSubtitle');
-        const loadingWarning = document.getElementById('loadingWarning');
         const resultInfo = document.getElementById('resultInfo');
         const loadedFileNameDisplay = document.getElementById('loadedFileNameDisplay');
 
-        // --- FLOW VALDYMAS ---
-        function goToStep(stepNum) {
-            steps.forEach((s, idx) => {
-                if (idx + 1 === stepNum) {
-                    s.classList.remove('hidden');
-                    s.classList.add('flex');
-                } else {
-                    s.classList.add('hidden');
-                    s.classList.remove('flex');
-                }
-            });
-            
-            for(let i=1; i<=3; i++) {
-                const label = document.getElementById(`stepLabel${i}`);
-                if (i === stepNum) {
-                    label.classList.add('text-emerald-600', 'scale-110');
-                    label.classList.remove('text-slate-300', 'text-emerald-400');
-                } else if (i < stepNum) {
-                    label.classList.add('text-emerald-400');
-                    label.classList.remove('text-emerald-600', 'text-slate-300', 'scale-110');
-                } else {
-                    label.classList.add('text-slate-300');
-                    label.classList.remove('text-emerald-600', 'text-emerald-400', 'scale-110');
-                }
-            }
-            lucide.createIcons();
-        }
-
-        // --- PRADINIS DATOS NUSTATYMAS ---
         const nustatytiPraeitaMenesi = () => {
             const d = new Date();
             d.setMonth(d.getMonth() - 1);
@@ -286,70 +227,36 @@
         };
         nustatytiPraeitaMenesi();
 
-        // --- ĮKĖLIMO LOGIKA ---
-        dropZone.onclick = () => fileInput.click();
-        fileInput.onchange = (e) => { if (e.target.files[0]) handleFile(e.target.files[0]); };
-        changeFileBtn.onclick = () => { fileInput.click(); };
-
-        // PATOBULINTAS DRAG & DROP VALDYMAS
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-            }, false);
-        });
-
-        dropZone.addEventListener('dragover', () => {
-            dropZone.classList.add('border-emerald-400', 'bg-emerald-50');
-        });
-
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('border-emerald-400', 'bg-emerald-50');
-        });
-
-        dropZone.addEventListener('drop', (e) => {
-            dropZone.classList.remove('border-emerald-400', 'bg-emerald-50');
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            if (files && files[0]) {
-                handleFile(files[0]);
-            }
-        });
-
-        function handleFile(file) {
-            loadingTitle.innerText = "Failas apdorojamas.....";
-            loadingSubtitle.innerText = "Nuskaitomi duomenys";
-            loadingWarning.classList.remove('hidden');
-            loadingOverlay.classList.remove('hidden');
-
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    setTimeout(() => {
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            setTimeout(() => {
-                                try {
-                                    const data = e.target.result;
-                                    const workbook = XLSX.read(data, { type: 'binary', cellDates: true });
-                                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                                    uploadedData = XLSX.utils.sheet_to_json(sheet);
-                                    
-                                    loadedFileNameDisplay.innerText = file.name;
-                                    goToStep(2);
-                                } catch (err) {
-                                    alert('Klaida nuskaitant failą. Patikrinkite ar tai tinkamas "Eksportas_statika.xls" failas.');
-                                } finally {
-                                    loadingOverlay.classList.add('hidden');
-                                }
-                            }, 50);
-                        };
-                        reader.readAsBinaryString(file);
-                    }, 200);
-                });
+        function goToStep(stepNum) {
+            steps.forEach((s, idx) => {
+                if (idx + 1 === stepNum) { s.classList.remove('hidden'); s.classList.add('flex'); }
+                else { s.classList.add('hidden'); s.classList.remove('flex'); }
             });
+            lucide.createIcons();
         }
 
-        // --- PAGALBINĖS FUNKCIJOS ---
+        dropZone.onclick = () => fileInput.click();
+        fileInput.onchange = (e) => { if (e.target.files[0]) handleFile(e.target.files[0]); };
+
+        function handleFile(file) {
+            loadingTitle.innerText = "Apdorojama...";
+            loadingSubtitle.innerText = "Laukite, nuskaitomas failas";
+            loadingOverlay.classList.remove('hidden');
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const workbook = XLSX.read(e.target.result, { type: 'binary', cellDates: true });
+                    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    uploadedData = XLSX.utils.sheet_to_json(sheet);
+                    loadedFileNameDisplay.innerText = file.name;
+                    goToStep(2);
+                } catch (err) { alert('Klaida nuskaitant failą.'); }
+                finally { loadingOverlay.classList.add('hidden'); }
+            };
+            reader.readAsBinaryString(file);
+        }
+
         const formatuotiReklamuotoja = (tekstas) => {
             if (!tekstas) return "";
             const dalys = tekstas.split(",").map(d => d.trim());
@@ -359,144 +266,162 @@
             return STATUSAI.includes(antraValyta) ? `${pirma}, ${antra}` : pirma;
         };
 
-        const formatuotiProdukta = (tekstas) => {
+        const gautiUzsakymoNumeri = (tekstas) => {
             if (!tekstas) return "";
-            const rpVariantas = tekstas.includes("R. P.") ? "R. P." : (tekstas.includes("R.P.") ? "R.P." : null);
-            if (!rpVariantas) return ""; 
-            const parts = tekstas.split(rpVariantas);
-            if (parts.length < 2) return "";
-            const poRP = parts[1].trim().replace(/^:/, "").trim();
-            const dalys = poRP.split(",");
-            return dalys.length > 1 ? dalys.slice(0, -1).join(",").trim() : dalys[0].trim();
+            const matches = String(tekstas).match(/\b(\d{4})\b/g);
+            if (!matches) return "";
+            return matches[matches.length - 1]; 
         };
 
         const gautiPuse = (kodas, tipas) => {
             const k = String(kodas).trim().toUpperCase();
             const t = String(tipas).trim().toLowerCase();
             if (t.includes('siena') || t.includes('stotelė')) return 1;
-            if (t.includes('vitrina')) { const m = k.match(/\.(\d)$/); return m ? parseInt(m[1]) : 1; }
-            if (t.includes('kolona')) return "1, 2, 3";
+            if (t.includes('vitrina')) return "1, 2, 3";
             const last = k.slice(-1);
-            if (last === 'A' || last === '1' || k.endsWith(' A')) return 1;
-            if (last === 'B' || last === '2' || k.endsWith(' B')) return 2;
-            return 1;
+            return (['B', '2'].includes(last) || k.endsWith(' B')) ? 2 : 1;
         };
 
-        // --- FORMavimo LOGIKA ---
+        const gautiTikrusInicialus = (tekstas) => {
+            if (!tekstas) return [];
+            const re = /(?:^|[^A-ZĄČĘĖĮŠŲŪŽ])([A-ZĄČĘĖĮŠŲŪŽ]\.\s?[A-ZĄČĘĖĮŠŲŪŽ]\.)/g;
+            const inicialai = [];
+            let match;
+            while ((match = re.exec(tekstas)) !== null) {
+                inicialai.push(match[1].trim());
+            }
+            return inicialai;
+        };
+
         generateBtn.onclick = () => {
             if (!uploadedData) return;
-            loadingTitle.innerText = "Generuojama TNS ataskaita";
-            loadingSubtitle.innerText = "Prašome palaukti...";
-            loadingWarning.classList.remove('hidden');
+            loadingTitle.innerText = "Apdorojama...";
+            loadingSubtitle.innerText = "Laukite, nuskaitomas failas";
             loadingOverlay.classList.remove('hidden');
 
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    setTimeout(() => {
-                        try {
-                            const year = reportYear.value;
-                            const month = reportMonth.value.padStart(2, '0');
-                            const targetPrefix = `${year}-${month}`;
-                            const inicialuRegex = /[A-ZĄČĘĖĮŠŲŪŽ]\.\s?[A-ZĄČĘĖĮŠŲŪŽ]\./g;
+            setTimeout(() => {
+                try {
+                    const year = reportYear.value;
+                    const month = reportMonth.value.padStart(2, '0');
+                    const targetPrefix = `${year}-${month}`;
 
-                            const filtered = uploadedData.filter(row => {
-                                const d = row['Data'];
-                                const p = row['Pardavimas'];
-                                if (!(d && String(d).startsWith(targetPrefix))) return false;
-                                if (!p || String(p).trim() === "" || String(p).trim() === "0") return false;
-                                
-                                const pStr = String(p).toLowerCase();
-                                if (pStr.includes("savininko reklama") || pStr.includes("lt advert")) return false;
+                    const filtered = uploadedData.filter(row => {
+                        const d = row['Data'];
+                        return d && String(d).startsWith(targetPrefix);
+                    });
 
-                                const visiInicialai = String(p).match(inicialuRegex) || [];
-                                return visiInicialai.filter(init => init.replace(/\s/g, '').toUpperCase() !== 'RP').length > 0;
-                            });
+                    const sorted = [...filtered].sort((a, b) => {
+                        if (a['Kodas'] !== b['Kodas']) return String(a['Kodas']).localeCompare(String(b['Kodas']));
+                        return String(a['Data']).localeCompare(String(b['Data']));
+                    });
 
-                            if (filtered.length === 0) {
-                                alert(`Nerasta tinkamų komercinių užsakymų už ${year}-${month}.`);
-                                loadingOverlay.classList.add('hidden');
-                                return;
+                    const groups = [];
+                    if (sorted.length > 0) {
+                        let curGroup = { row: sorted[0], datos: [sorted[0]['Data']] };
+                        for (let i = 1; i < sorted.length; i++) {
+                            const prevRow = sorted[i - 1];
+                            const currRow = sorted[i];
+                            const d1 = new Date(prevRow['Data']);
+                            const d2 = new Date(currRow['Data']);
+                            const diff = (d2 - d1) / (1000 * 60 * 60 * 24);
+
+                            if (currRow['Kodas'] === prevRow['Kodas'] && 
+                                currRow['Pardavimas'] === prevRow['Pardavimas'] && 
+                                diff === 1) {
+                                curGroup.datos.push(currRow['Data']);
+                            } else {
+                                groups.push(curGroup);
+                                curGroup = { row: currRow, datos: [currRow['Data']] };
                             }
-
-                            const sorted = [...filtered].sort((a, b) => {
-                                if (a['Kodas'] !== b['Kodas']) return String(a['Kodas']).localeCompare(String(b['Kodas']));
-                                return String(a['Data']).localeCompare(String(b['Data']));
-                            });
-
-                            const groups = [];
-                            if (sorted.length > 0) {
-                                let cur = {
-                                    kodas: sorted[0]['Kodas'],
-                                    pardavimas: sorted[0]['Pardavimas'],
-                                    miestas: sorted[0]['Miestas'],
-                                    adresas: sorted[0]['Pardavimų adresas'],
-                                    tipas: sorted[0]['Tipas'],
-                                    kainaSav: parseFloat(sorted[0]['1 sav. nuomos GROSS kaina']) || 0,
-                                    datos: [sorted[0]['Data']]
-                                };
-                                for (let i = 1; i < sorted.length; i++) {
-                                    const row = sorted[i];
-                                    if (row['Kodas'] === cur.kodas && row['Pardavimas'] === cur.pardavimas) {
-                                        cur.datos.push(row['Data']);
-                                    } else {
-                                        groups.push(cur);
-                                        cur = {
-                                            kodas: row['Kodas'], pardavimas: row['Pardavimas'], miestas: row['Miestas'], adresas: row['Pardavimų adresas'],
-                                            tipas: row['Tipas'], kainaSav: parseFloat(row['1 sav. nuomos GROSS kaina']) || 0, datos: [row['Data']]
-                                        };
-                                    }
-                                }
-                                groups.push(cur);
-                            }
-
-                            const tnsRows = groups.map(g => {
-                                const sDates = g.datos.sort();
-                                const dienos = sDates.length;
-                                const gross = (dienos * (g.kainaSav / 7));
-
-                                return {
-                                    'Stendo vietos kodas': g.kodas,
-                                    'Stendo tipas': g.tipas,
-                                    'Miestas': g.miestas,
-                                    'Adresas': g.adresas,
-                                    'Reklamuotojas': formatuotiReklamuotoja(g.pardavimas),
-                                    'Prekės ženklas': g.pardavimas,
-                                    'Reklamuojamas produktas': formatuotiProdukta(g.pardavimas) || g.pardavimas,
-                                    'Data nuo': sDates[0],
-                                    'Data iki': sDates[sDates.length - 1],
-                                    'Pusė': gautiPuse(g.kodas, g.tipas),
-                                    'GROSS įkainis Eur': Number(gross.toFixed(2))
-                                };
-                            });
-
-                            setTimeout(() => {
-                                const ws = XLSX.utils.json_to_sheet(tnsRows);
-                                const wb = XLSX.utils.book_new();
-                                XLSX.utils.book_append_sheet(wb, ws, "TNS Ataskaita");
-                                XLSX.writeFile(wb, `TNS_Ataskaita_${year}_${month}.xlsx`);
-                                
-                                resultInfo.innerText = `Sėkmingai suformuota ${tnsRows.length} eilučių.`;
-                                goToStep(3);
-                                loadingOverlay.classList.add('hidden');
-                            }, 100);
-
-                        } catch (err) {
-                            console.error(err);
-                            alert('Klaida generuojant ataskaitą.');
-                            loadingOverlay.classList.add('hidden');
                         }
-                    }, 100);
-                });
-            });
+                        groups.push(curGroup);
+                    }
+
+                    const finalData = groups.map(g => {
+                        const r = g.row;
+                        const sDates = g.datos.sort();
+                        const pStr = String(r['Pardavimas']);
+                        const pLower = pStr.toLowerCase();
+
+                        const visiInicialai = gautiTikrusInicialus(pStr);
+                        const tinkamiPardavejai = visiInicialai.filter(init => {
+                            const clean = init.replace(/\s/g, '').toUpperCase();
+                            return clean !== 'RP.' && clean !== 'RP';
+                        });
+                        const pardavejas = tinkamiPardavejai.length > 0 ? tinkamiPardavejai[tinkamiPardavejai.length - 1] : "";
+                        
+                        const uzsNr = gautiUzsakymoNumeri(pStr);
+
+                        let produktas = ""; 
+                        const rpMatch = pStr.match(/R\.\s?P\./i);
+                        
+                        if (rpMatch) {
+                            const rpIndex = rpMatch.index;
+                            const poRP = pStr.substring(rpIndex + rpMatch[0].length).trim().replace(/^:/, "").trim();
+                            
+                            if (pardavejas !== "") {
+                                const pardavejoVieta = poRP.indexOf(pardavejas);
+                                if (pardavejoVieta !== -1) {
+                                    produktas = poRP.substring(0, pardavejoVieta).trim();
+                                } else {
+                                    produktas = poRP;
+                                }
+                            } else {
+                                if (uzsNr !== "") {
+                                    const nrVieta = poRP.indexOf(uzsNr);
+                                    if (nrVieta !== -1) {
+                                        produktas = poRP.substring(0, nrVieta).trim();
+                                    } else {
+                                        produktas = poRP;
+                                    }
+                                } else {
+                                    produktas = poRP;
+                                }
+                            }
+                            produktas = produktas.replace(/[,.\s]+$/, "").trim();
+                        }
+
+                        const kategorija = (pLower.includes("savininko reklama") || pLower.includes("lt advert") || pardavejas === "") ? "Kita" : "Komercinis";
+                        
+                        const kainaSav = parseFloat(r['1 sav. nuomos GROSS kaina']) || 0;
+                        const grossTotal = (sDates.length * (kainaSav / 7));
+
+                        return {
+                            'Stendo vietos kodas': r['Kodas'],
+                            'Stendo tipas': r['Tipas'],
+                            'Miestas': r['Miestas'],
+                            'Adresas': r['Pardavimų adresas'],
+                            'Reklamuotojas': formatuotiReklamuotoja(pStr),
+                            'Prekės ženklas': pStr,
+                            'Reklamuojamas produktas': produktas,
+                            'Pardavėjas': pardavejas,
+                            'Užsakymo numeris': uzsNr,
+                            'Kategorija': kategorija,
+                            'Data nuo': sDates[0],
+                            'Data iki': sDates[sDates.length - 1],
+                            'Pusė': gautiPuse(r['Kodas'], r['Tipas']),
+                            'GROSS Eur': kategorija === "Kita" ? 0 : Number(grossTotal.toFixed(2))
+                        };
+                    });
+
+                    const ws = XLSX.utils.json_to_sheet(finalData);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "TNS Ataskaita");
+                    
+                    XLSX.writeFile(wb, `TNS ataskaita [už ${year} ${month}].xlsx`);
+                    
+                    resultInfo.innerText = `Ataskaita paruošta: suformuota ${finalData.length} eilučių`;
+                    goToStep(3);
+                } catch (err) { console.error(err); alert('Klaida apdorojant duomenis.'); }
+                finally { loadingOverlay.classList.add('hidden'); }
+            }, 100);
         };
 
-        restartBtn.onclick = () => {
-            uploadedData = null;
-            fileInput.value = "";
-            nustatytiPraeitaMenesi();
-            goToStep(1);
+        // ATNAUJINTA: Paspaudus „Nauja ataskaita“, grįžtame į mėnesio pasirinkimą, nes duomenys jau įkelti
+        restartBtn.onclick = () => { 
+            nustatytiPraeitaMenesi(); 
+            goToStep(2); 
         };
-
     </script>
 </body>
 </html>
