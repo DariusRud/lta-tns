@@ -204,7 +204,8 @@
         loginBtn.onclick = handleLogin;
 
         let uploadedData = null;
-        const STATUSAI = ["UAB", "AB", "IĮ", "VŠĮ", "AS", "VIEŠOJI ĮSTAIGA"];
+        // Papildyta statusu "MB"
+        const STATUSAI = ["UAB", "AB", "IĮ", "VŠĮ", "AS", "VIEŠOJI ĮSTAIGA", "MB"];
 
         const steps = [document.getElementById('step1'), document.getElementById('step2'), document.getElementById('step3')];
         const fileInput = document.getElementById('fileInput');
@@ -262,8 +263,13 @@
             const dalys = tekstas.split(",").map(d => d.trim());
             const pirma = dalys[0] || "";
             const antra = dalys.length > 1 ? dalys[1] : "";
-            const antraValyta = antra.toUpperCase().replace(/\./g, "");
-            return STATUSAI.includes(antraValyta) ? `${pirma}, ${antra}` : pirma;
+            // Valome statusą (pvz., MB. -> MB)
+            const antraValyta = antra.toUpperCase().replace(/\./g, "").trim();
+            
+            // Tikriname, ar antra dalis prasideda vienu iš žinomų statusų
+            const randaStatusa = STATUSAI.some(s => antraValyta === s || antraValyta.startsWith(s + " "));
+            
+            return randaStatusa ? `${pirma}, ${antra.split(' ')[0].replace(/[,.]+$/, "")}` : pirma;
         };
 
         const gautiUzsakymoNumeri = (tekstas) => {
@@ -417,7 +423,6 @@
             }, 100);
         };
 
-        // ATNAUJINTA: Paspaudus „Nauja ataskaita“, grįžtame į mėnesio pasirinkimą, nes duomenys jau įkelti
         restartBtn.onclick = () => { 
             nustatytiPraeitaMenesi(); 
             goToStep(2); 
